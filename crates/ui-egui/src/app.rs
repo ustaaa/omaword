@@ -123,6 +123,8 @@ impl WordApp {
             // Inert until the app binary calls `watch_desktop_theme`.
             desktop_theme: desktop_theme::DesktopTheme::default(),
             desktop_dark: None,
+            omarchy: crate::omarchy::Watcher::default(),
+            omarchy_snapshot: crate::omarchy::Snapshot::default(),
             applied_editing: None,
             system_animations: None,
             applied_animations: None,
@@ -245,7 +247,8 @@ impl WordApp {
         self.ensure_recent_fonts();
         self.ensure_find_fonts();
         self.install_ui_fonts(ctx, lang);
-        if let Some(answer) = self.desktop_theme.take_change() {
+        self.sync_omarchy(ctx);
+        if let Some(answer) = self.desktop_theme.take_change(ctx, self.ui.theme == theme::Appearance::System) {
             self.desktop_dark = Some(answer);
         }
         // Both palettes are installed and egui picks one: with `System` it follows an OS appearance
@@ -253,6 +256,13 @@ impl WordApp {
         // desktop portal's answer fills in instead. The interface follows the Interface theme
         // setting alone; Dark page only changes how pages are drawn (#312).
         let effective = match self.ui.theme {
+            theme::Appearance::System if self.omarchy_snapshot.palette.is_some() => {
+                if self.omarchy_snapshot.palette.is_some_and(|p| p.dark) {
+                    theme::Appearance::Dark
+                } else {
+                    theme::Appearance::Light
+                }
+            }
             theme::Appearance::System if ctx.system_theme().is_none() => match self.desktop_dark {
                 Some(true) => theme::Appearance::Dark,
                 Some(false) => theme::Appearance::Light,
@@ -413,6 +423,7 @@ impl WordApp {
             ctx.input_mut(|i| i.smooth_scroll_delta = scroll::unsmoothed_scroll(i, &opts));
         }
         self.handle_ui_input_events(&ctx);
+        self.apply_omarchy_fonts(&ctx);
         // Fonts installed by `logic` take effect on the next frame.
         if self.fonts_frames < 2 {
             self.fonts_frames += 1;

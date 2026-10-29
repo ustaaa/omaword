@@ -3891,7 +3891,7 @@ fn the_ime_fixture_draws_kana_without_a_japanese_font() {
     ctx.set_fonts(fonts);
     kana_test_glyphs(&ctx);
     let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
-        let g = ui.painter().layout_no_wrap("にほん".into(), crate::theme::regular(14.0), egui::Color32::WHITE);
+        let g = ui.painter().layout_no_wrap("にほん".into(), crate::theme::document_regular(14.0), egui::Color32::WHITE);
         assert_eq!(g.rows.first().map_or(0, |r| r.row.glyphs.len()), 3, "one glyph per composed kana");
     });
     output.textures_delta.clear();

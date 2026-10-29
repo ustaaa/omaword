@@ -5,7 +5,7 @@ use std::path::Path;
 use std::process::{Command, Output};
 
 fn run(args: &[&str], out: &Path) -> Output {
-    let mut cli = Command::new(env!("CARGO_BIN_EXE_wordcraft-cli"));
+    let mut cli = Command::new(env!("CARGO_BIN_EXE_omaword-cli"));
     cli.arg("run").args(args).arg("--save").arg(out);
     cli.output().unwrap()
 }
@@ -25,7 +25,7 @@ fn run_saves_the_document_opened_last() {
     let opened = run(&["--template", "blank", "--cmd", r#"text.insert={"text":"Typed"}"#, "--cmd", &open, "--cmd", "caret.docEnd"], &out);
     let reopened = std::fs::read_to_string(&out).unwrap_or_default();
     // A run starts with one open document.
-    let mut cli = Command::new(env!("CARGO_BIN_EXE_wordcraft-cli"));
+    let mut cli = Command::new(env!("CARGO_BIN_EXE_omaword-cli"));
     let listed = cli.args(["run", "--template", "sample", "--print", "--cmd", "view.switchWindows"]).output().unwrap();
     let _ = std::fs::remove_dir_all(&dir);
 

@@ -1,0 +1,105 @@
+{
+  "app": "word",
+  "upstream_repository": "https://github.com/storytold/wordcraft",
+  "upstream_tag": "v0.12.0",
+  "upstream_sha": "3de6ff95af86c19d67030cd96dba15cd6a45a25e",
+  "cases": [
+    {
+      "name": "native",
+      "extension": "wcraft.json"
+    },
+    {
+      "name": "ooxml",
+      "extension": "docx"
+    }
+  ],
+  "create": [
+    [
+      "text.insert",
+      {
+        "text": "Oma suite baseline\nTürkçe: İstanbul, çalışma, ığüşöç.\nTable follows.",
+        "paragraphs": true
+      }
+    ],
+    [
+      "select.text",
+      {
+        "text": "baseline"
+      }
+    ],
+    [
+      "format.bold",
+      {}
+    ],
+    [
+      "format.font",
+      {
+        "name": "Liberation Sans"
+      }
+    ],
+    [
+      "caret.docEnd",
+      {}
+    ],
+    [
+      "insert.table",
+      {
+        "rows": 2,
+        "cols": 2
+      }
+    ],
+    [
+      "text.insert",
+      {
+        "text": "Cell A"
+      }
+    ],
+    [
+      "text.tab",
+      {}
+    ],
+    [
+      "text.insert",
+      {
+        "text": "Cell B"
+      }
+    ]
+  ],
+  "edit": [
+    [
+      "caret.docEnd",
+      {}
+    ],
+    [
+      "text.insert",
+      {
+        "text": "\nOma edit persisted",
+        "paragraphs": true
+      }
+    ],
+    [
+      "edit.undo",
+      {}
+    ],
+    [
+      "document.inspect",
+      {}
+    ],
+    [
+      "edit.redo",
+      {}
+    ],
+    [
+      "document.inspect",
+      {}
+    ]
+  ],
+  "expected_text": [
+    "Oma suite baseline",
+    "İstanbul",
+    "Cell A",
+    "Cell B",
+    "Oma edit persisted"
+  ],
+  "undo_marker": "Oma edit persisted"
+}

@@ -413,6 +413,7 @@ fn clearing_a_font_query_keeps_the_recent_heading_visible() {
         let mut h = egui_kittest::Harness::builder().with_size(vec2(400.0, 600.0)).build_ui(move |ui| {
             font_combo_with_recent(ui, "recent_ci_reduced", 150.0, "", &fonts, &recent, None);
         });
+        h.ctx.set_fonts(crate::theme::font_definitions(false, false));
         h.run_steps(2);
         h.get(By::new().role(Role::TextInput)).focus();
         h.step();

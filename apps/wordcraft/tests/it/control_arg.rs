@@ -4,7 +4,7 @@ use std::process::{Command, Output, Stdio};
 use std::time::{Duration, Instant};
 
 fn app(args: &[&str]) -> Output {
-    let mut child = Command::new(env!("CARGO_BIN_EXE_wordcraft"))
+    let mut child = Command::new(env!("CARGO_BIN_EXE_omaword"))
         .args(args)
         // With no display, an app that tries to open a window fails at once instead.
         .env_remove("DISPLAY")
@@ -54,5 +54,5 @@ fn a_flag_after_control_is_read_as_a_flag() {
     let out = app(&["--control", "--version"]);
     let (stdout, stderr) = (String::from_utf8_lossy(&out.stdout), String::from_utf8_lossy(&out.stderr));
     assert!(out.status.success(), "status {:?}, stderr: {stderr}", out.status);
-    assert!(stdout.starts_with("wordcraft "), "stdout: {stdout}");
+    assert!(stdout.starts_with("OmaWord "), "stdout: {stdout}");
 }

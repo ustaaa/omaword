@@ -46,6 +46,7 @@ pub mod keytips;
 mod local_time;
 pub mod mini_toolbar;
 pub mod objects;
+pub mod omarchy;
 pub mod options;
 pub mod panes;
 pub mod paste_picture;
@@ -539,6 +540,8 @@ pub struct WordApp {
     legacy_interface_size: Option<f64>,
     /// The desktop's light/dark choice, watched while the app runs (Linux has no winit answer).
     desktop_theme: desktop_theme::DesktopTheme,
+    omarchy: omarchy::Watcher,
+    omarchy_snapshot: omarchy::Snapshot,
     /// The last answer [`desktop_theme`] gave, so a frame that asks costs nothing.
     desktop_dark: Option<bool>,
     /// The interface language and the editing language the session last got for it

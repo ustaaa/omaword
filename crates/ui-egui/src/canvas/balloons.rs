@@ -1,9 +1,9 @@
 use super::geometry::{FLOAT_WIDTH, floating_comments, markup_width, shown_comment};
 use super::pages::page_screen_scale;
 use super::{
-    Color32, CommentDisplay, DocLayout, HashMap, PX_PER_PT, Pos, Pos2, Rect, Sense, StoryRef, Stroke, Tokens, Ui, WordApp, json, pos2, regular,
-    semibold, vec2,
+    Color32, CommentDisplay, DocLayout, HashMap, PX_PER_PT, Pos, Pos2, Rect, Sense, StoryRef, Stroke, Tokens, Ui, WordApp, json, pos2, vec2,
 };
+use crate::theme::{document_regular as regular, document_semibold as semibold};
 
 /// Comment balloons in the markup area right of each page, joined to their anchors, with each
 /// comment's replies under it. Clicking a balloon selects it, like Word: its text becomes editable

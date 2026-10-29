@@ -82,3 +82,11 @@ Progress docs follow [`craftrules/standards/progress-docs.md`](https://github.co
   GitHub profiles). Never hand-edit `contributors.json`.
 - Maintainers refresh the stats with `python3 ../../craftrules/scripts/contributors.py .` (it also
   re-verifies who wrote each `people.toml` entry; `--check` only verifies).
+
+## OmaWord fork workflow (owner override, 2026-10-29)
+
+The owner authorized this Omarchy adaptation, GitHub fork, local installation and direct agent commits/pushes for OmaWord without a Nomura review prerequisite. Preserve upstream history and use `codex/` branches. Do not change document, layout, font database or file-format engines to implement desktop appearance. Keep inherited licensing/attribution. Record evidence and limitations in HANDOFF.md. This scoped instruction supersedes the parent workspace's no-direct-commit convention for this project only.
+
+## Cost-aware delegation
+
+For routine coding, identity renames, packaging, test helpers, and documentation, delegate to Halogen or another explicitly selected lower-cost subagent. Reserve Astra for architecture, difficult debugging, and final review when needed. Subagents inherit the parent model unless explicitly selected, so always specify the intended lower-cost model for routine work. Verify generated changes and tests. If Halogen is unavailable, do independent useful work or use a suitable lower-cost alternative, and report the limitation; do not silently move bulk work to a costly model. Do not change providers, global defaults, or infrastructure.

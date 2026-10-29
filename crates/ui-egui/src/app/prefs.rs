@@ -85,12 +85,44 @@ impl WordApp {
     /// system theme; see [`desktop_theme`]). The desktop app calls this once at start-up; unit
     /// tests and `ui_shot` don't, so what they draw doesn't depend on the host's desktop theme.
     pub fn watch_desktop_theme(&mut self, ctx: &egui::Context) {
-        let ctx = ctx.clone();
-        self.desktop_theme = desktop_theme::DesktopTheme::start(move || ctx.request_repaint());
+        let _ = ctx;
+        self.desktop_theme = desktop_theme::DesktopTheme::start();
+        self.omarchy = crate::omarchy::Watcher::start();
+    }
+
+    /// Cached background state only; an appearance change never changes document fonts/layout.
+    pub(super) fn sync_omarchy(&mut self, ctx: &egui::Context) {
+        self.omarchy_snapshot = self.omarchy.current(ctx);
+        let palette = (self.ui.theme == theme::Appearance::System).then_some(self.omarchy_snapshot.palette).flatten();
+        if theme::set_omarchy_palette(ctx, palette) {
+            self.applied_theme = None;
+        }
+    }
+
+    /// Font activation belongs to a real UI pass, never a hidden logic tick carrying stale input.
+    /// This pass consumes the one-frame font gate immediately; the next input frame remains live.
+    pub(super) fn apply_omarchy_fonts(&mut self, ctx: &egui::Context) {
+        let palette = (self.ui.theme == theme::Appearance::System).then_some(self.omarchy_snapshot.palette).flatten();
+        let idle = self.fonts_frames >= 2
+            && !self.synthetic_pending
+            && self.synthetic.is_empty()
+            && self.canvas.ime_preedit.is_empty()
+            && self.dialog.is_none()
+            && !ctx.text_edit_focused()
+            && ctx.input(|i| i.events.is_empty() && !i.pointer.any_down());
+        if idle && theme::refresh_omarchy_fonts(ctx, palette.and(self.omarchy_snapshot.fonts.clone())) {
+            self.fonts_frames = 1;
+            ctx.request_repaint();
+        }
     }
 
     /// Whether the interface theme setting currently resolves to dark (`System` asks the OS).
     pub fn ui_is_dark(&self) -> bool {
+        if self.ui.theme == theme::Appearance::System
+            && let Some(p) = self.omarchy_snapshot.palette
+        {
+            return p.dark;
+        }
         self.ui.theme.is_dark(self.ctx.as_ref().and_then(|ctx| system_theme(ctx, self.desktop_dark)))
     }
 
@@ -139,5 +171,73 @@ impl WordApp {
             ctx.send_viewport_cmd(egui::ViewportCommand::Fullscreen(want));
             self.sent_full_screen = want;
         }
+    }
+}
+
+#[cfg(test)]
+mod omarchy_tests {
+    use super::*;
+
+    #[test]
+    fn manual_modes_ignore_desktop_palette_without_touching_document() {
+        let ctx = egui::Context::default();
+        let palette = crate::omarchy::Palette::parse("background='#101020'\nforeground='#eeeeff'\nmode='dark'", false).unwrap();
+        let mut app = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::from_text("Preserved text")), Default::default());
+        app.omarchy = crate::omarchy::Watcher::fixed(palette);
+        let doc = app.session.doc.clone();
+        let revision = app.session.rev();
+        for appearance in [theme::Appearance::System, theme::Appearance::Light, theme::Appearance::Dark, theme::Appearance::System] {
+            app.ui.theme = appearance;
+            app.sync_omarchy(&ctx);
+            theme::apply(&ctx, if appearance == theme::Appearance::System { theme::Appearance::Dark } else { appearance });
+            let tokens = theme::Tokens::get(&ctx);
+            if appearance == theme::Appearance::System {
+                assert_eq!(tokens.title_bar, palette.background);
+            } else {
+                assert_eq!(tokens, if appearance == theme::Appearance::Dark { theme::Tokens::dark() } else { theme::Tokens::light() });
+            }
+            assert_eq!(app.session.doc, doc);
+            assert_eq!(app.session.rev(), revision);
+            assert!(!app.session.can_undo());
+        }
+    }
+
+    #[test]
+    fn font_refresh_defers_on_real_text_and_never_skips_the_following_input_frame() {
+        let ctx = egui::Context::default();
+        let mut app = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::from_text("Seed")), Default::default());
+        app.ui.start_screen = false;
+        let frame = |app: &mut WordApp, events| {
+            let raw = egui::RawInput {
+                screen_rect: Some(egui::Rect::from_min_size(egui::Pos2::ZERO, egui::vec2(1200.0, 900.0))),
+                events,
+                ..Default::default()
+            };
+            let mut out = ctx.run_ui(raw, |ui| {
+                app.logic(ui.ctx());
+                app.ui(ui);
+            });
+            out.textures_delta.clear();
+        };
+        for _ in 0..3 {
+            frame(&mut app, vec![]);
+        }
+        assert!(app.fonts_frames >= 2);
+        let base = theme::font_definitions(false, false);
+        let data = base.font_data.values().next().unwrap();
+        let face = crate::omarchy::FontFace { bytes: std::sync::Arc::new(data.bytes().to_vec()), index: data.index };
+        assert!(theme::refresh_omarchy_fonts(&ctx, Some((face.clone(), face))));
+        // A hidden logic tick must not arm a future blank paint gate with stale input.
+        let _ = ctx.run_logic(&egui::RawInput::default(), |ctx| app.logic(ctx));
+        assert!(app.fonts_frames >= 2);
+        // Removal is pending but the real event owns this frame.
+        frame(&mut app, vec![egui::Event::Text("x".into())]);
+        assert!(app.fonts_frames >= 2);
+        assert!(app.session.doc.plain_text(wordcraft_doc::StoryRef::Body).contains('x'));
+        // One idle frame applies the removal and consumes the font gate immediately.
+        frame(&mut app, vec![]);
+        assert!(app.fonts_frames >= 2);
+        frame(&mut app, vec![egui::Event::Text("y".into())]);
+        assert!(app.session.doc.plain_text(wordcraft_doc::StoryRef::Body).contains('y'));
     }
 }

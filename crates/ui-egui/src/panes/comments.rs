@@ -1,4 +1,4 @@
-use super::{BTreeMap, StoryRef, Stroke, Tokens, Ui, Value, WordApp, json, regular, semibold};
+use super::{BTreeMap, StoryRef, Stroke, Tokens, Ui, Value, WordApp, json, regular};
 
 /// Draws the Comments pane: New Comment and scrollable comment and reply cards with edit, go-to,
 /// reply, resolve or reopen, and delete actions.
@@ -22,14 +22,15 @@ pub(super) fn comments(app: &mut WordApp, ui: &mut Ui) {
                     ui.add_space(0.0);
                 }
                 ui.horizontal(|ui| {
-                    ui.label(egui::RichText::new(c.get("author").and_then(Value::as_str).unwrap_or("")).font(semibold(12.0)));
-                    ui.label(egui::RichText::new(when).small().weak());
+                    ui.label(egui::RichText::new(c.get("author").and_then(Value::as_str).unwrap_or("")).font(crate::theme::document_semibold(12.0)));
+                    ui.label(egui::RichText::new(when).font(crate::theme::document_regular(egui::TextStyle::Small.resolve(ui.style()).size)).weak());
                     if c.get("resolved").and_then(Value::as_bool).unwrap_or(false) {
                         ui.label(egui::RichText::new(tl!("Resolved")).small().color(t.green));
                     }
                 });
                 // Editable comment text (one undo step per edit, like the balloons).
-                comment_editor(app, ui, id as u32, None, false);
+                let document_font = crate::theme::document_regular(egui::TextStyle::Body.resolve(ui.style()).size);
+                comment_editor(app, ui, id as u32, Some(document_font.clone()), false);
                 let open_key = egui::Id::unique(("comment_reply_open", document, id));
                 let mut replying = ui.data(|d| d.get_temp::<bool>(open_key)).unwrap_or(false);
                 ui.horizontal(|ui| {
@@ -53,7 +54,7 @@ pub(super) fn comments(app: &mut WordApp, ui: &mut Ui) {
                 });
                 if replying {
                     let focus = ui.data_mut(|d| d.remove_temp::<bool>(egui::Id::unique(("comment_reply_focus", document, id)))).unwrap_or(false);
-                    if reply_editor(app, ui, id as u32, None, focus) {
+                    if reply_editor(app, ui, id as u32, Some(document_font), focus) {
                         ui.data_mut(|d| d.remove::<bool>(open_key));
                     }
                 }
