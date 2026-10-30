@@ -799,16 +799,16 @@ impl WordApp {
         };
         match hook() {
             Ok(DefaultApp::SettingsOpened) => {
-                self.status(tl!("In Default apps, choose WordCraft for the document types you want it to open."));
+                self.status(tl!("In Default apps, choose OmaWord for the document types you want it to open."));
                 Ok(json!({"settingsOpened": true}))
             }
             Ok(DefaultApp::MadeDefault) => {
-                self.status(tl!("WordCraft is now the default app for Word documents."));
+                self.status(tl!("OmaWord is now the default app for Word documents."));
                 Ok(json!({"default": true}))
             }
             Err(e) => {
                 log::warn!("make default app: {e}");
-                let msg = i18n::fmt(tl!("Couldn't make WordCraft the default: {error}"), &[("error", &e)]);
+                let msg = i18n::fmt(tl!("Couldn't make OmaWord the default: {error}"), &[("error", &e)]);
                 self.status(msg.clone());
                 Err(msg)
             }

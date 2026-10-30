@@ -1,0 +1,52 @@
+# Experimental compile check only. Run manually; this does not package, sign, or release macOS builds.
+name: macOS compile check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [macos-14, macos-15-intel]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 90
+    env:
+      CRAFT_FONTS_DIR: ${{ github.workspace }}/.build-inputs/fonts
+      CRAFT_FONTS_REQUIRED: '1'
+      CRAFT_I18N_DIR: ${{ github.workspace }}/.build-inputs/i18n
+      CRAFT_I18N_REQUIRED: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check out the validated font pack
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: storytold/craft-fonts
+          ref: b076417b5880bd4154bd22f00695b1d28c6bea83
+          path: .build-inputs/fonts
+          persist-credentials: false
+      - name: Check out the validated translations
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: storytold/craft-i18n
+          ref: 9205108cfdced5177706264038848b68b2422d2b
+          path: .build-inputs/i18n
+          persist-credentials: false
+      - name: Install native build dependencies
+        run: brew install pkg-config fontconfig freetype
+      - name: Install Rust 1.99.1
+        run: |
+          rustup toolchain install 1.99.1 --profile minimal
+          rustc +1.99.1 --version
+      - name: Build application and CLI
+        run: |
+          umask 022
+          cargo +1.99.1 build --release --locked -p wordcraft -p wordcraft-cli
+      - name: Verify lockfile stayed reproducible
+        run: git diff --exit-code -- Cargo.lock

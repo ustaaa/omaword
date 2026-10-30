@@ -1,29 +1,65 @@
 name: OmaWord checks
+
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
+
 permissions:
   contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   quality:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
     env:
       CARGO_BUILD_JOBS: 2
       CRAFT_FONTS_DIR: ${{ github.workspace }}/.build-inputs/fonts
-      CRAFT_FONTS_REQUIRED: 1
+      CRAFT_FONTS_REQUIRED: '1'
       CRAFT_I18N_DIR: ${{ github.workspace }}/.build-inputs/i18n
-      CRAFT_I18N_REQUIRED: 1
+      CRAFT_I18N_REQUIRED: '1'
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check out the validated font pack
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: storytold/craft-fonts
           ref: b076417b5880bd4154bd22f00695b1d28c6bea83
           path: .build-inputs/fonts
-      - uses: actions/checkout@v4
+          persist-credentials: false
+      - name: Check out the validated translations
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: storytold/craft-i18n
           ref: 9205108cfdced5177706264038848b68b2422d2b
           path: .build-inputs/i18n
-      - run: sudo apt-get update && sudo apt-get install -y pkg-config libxkbcommon-dev libwayland-dev libx11-dev libxcursor-dev libxrandr-dev libxi-dev libgtk-3-dev libfontconfig1-dev libfreetype-dev mesa-vulkan-drivers
-      - run: rustup update stable && rustup component add clippy rustfmt && rustup target add wasm32-unknown-unknown
-      - run: cargo xtask ci
+          persist-credentials: false
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            pkg-config libxkbcommon-dev libwayland-dev libx11-dev libxcursor-dev libxrandr-dev \
+            libxi-dev libgtk-3-dev libfontconfig1-dev libfreetype-dev \
+            libvulkan1 mesa-vulkan-drivers
+      - name: Install Rust 1.99.1
+        run: |
+          rustup toolchain install 1.99.1 --profile minimal --component rustfmt --component clippy
+          rustup target add --toolchain 1.99.1 wasm32-unknown-unknown
+          rustc +1.99.1 --version
+      - name: Run quality gates
+        run: |
+          umask 022
+          cargo +1.99.1 xtask ci
+      - name: Verify locked native builds
+        run: |
+          umask 022
+          cargo +1.99.1 build --release --locked -p wordcraft -p wordcraft-cli
+      - name: Verify lockfile stayed reproducible
+        run: git diff --exit-code -- Cargo.lock

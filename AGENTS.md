@@ -1,3 +1,15 @@
+## OmaOffice lifecycle
+
+This repository is one component of https://github.com/ustaaa/omaoffice.
+The owner authorized establishing fork commits, private coordination repositories and
+reviewable GitHub branches for the current lifecycle task. This supersedes older
+Nomura-only coordination and private-host CHECKPOINT requirements for that task.
+Preserve unrelated changes. No automatic merge, public release or visibility change.
+Use independent model review plus reproducible tests; see the suite review contract.
+Do not write machine addresses, credentials or private notebook content into tracked
+files. The constrained runtime test machine is not a build host: x86 builds run on
+the designated Linux build host. Keep runtime and build evidence separate.
+
 # WordCraft — instructions for agents
 
 WordCraft is a clean-room, open-source, Rust-native word processor targeting Microsoft Word parity — and going further on speed, openness and agent control. It runs natively on macOS, Windows, Linux and BSD, and on the web via WASM. Siblings with the same conventions: `../photocraft` (Photoshop), `../vectorcraft` (Illustrator), `../filmcraft` (Premiere), `../lightcraft` (Lightroom), `../pdfcraft` (Acrobat), `../effectcraft` (After Effects), `../designcraft` (InDesign). Shared rules and learnings: [`storytold/craftrules`](https://github.com/storytold/craftrules) (`../../craftrules`) — read its `AGENTS.md`.

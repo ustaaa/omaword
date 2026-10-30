@@ -15,6 +15,12 @@
   ],
   "create": [
     [
+      "file.setAuthor",
+      {
+        "name": "Oma suite validation"
+      }
+    ],
+    [
       "text.insert",
       {
         "text": "Oma suite baseline\nTürkçe: İstanbul, çalışma, ığüşöç.\nTable follows.",
@@ -66,6 +72,12 @@
     ]
   ],
   "edit": [
+    [
+      "file.setAuthor",
+      {
+        "name": "Oma suite validation"
+      }
+    ],
     [
       "caret.docEnd",
       {}
