@@ -1,5 +1,8 @@
 # OmaWord — Omarchy desktop pilot
 
+Part of [OmaCraft](https://github.com/ustaaa/omacraft) - a friendly fork of ArtCraft's WordCraft.
+
+
 OmaWord adapts [WordCraft v0.12.0](https://github.com/storytold/wordcraft/releases/tag/v0.12.0) for Omarchy. The document engine, layout, formats, commands and ribbon remain upstream. The fork adds live Omarchy v3/v4 chrome, fontconfig monospace interface fonts, an explicit native Wayland pilot, and an isolated application identity. Original WordCraft and contributor attribution remains below and in the license files.
 
 - GUI / CLI: `omaword`, `omaword-cli`; desktop ID: `io.github.ustaaa.OmaWord`.
@@ -8,7 +11,7 @@ OmaWord adapts [WordCraft v0.12.0](https://github.com/storytold/wordcraft/releas
 - Updates are installation-managed. The fork never checks for or installs an upstream WordCraft binary.
 - Linux user-local package: `packaging/linux/package-omaword.sh`, then `packaging/linux/install-pilot.sh ARCHIVE UNIQUE_VERSION`. The installer validates architecture, preserves version folders and refuses unrelated existing files. It does not claim MIME defaults. Use `OMAWORD_WAYLAND=1` for the native Wayland pilot or `OMAWORD_X11=1` to force X11. The binary retains upstream’s XWayland fallback when DISPLAY is available; the installed Omarchy pilot launcher explicitly sets OMAWORD_WAYLAND=1 to follow compositor scaling. Physical clipboard/drop/portal acceptance remains outstanding.
 
-See [HANDOFF.md](HANDOFF.md) for verified results and remaining acceptance work, [suite validation](docs/suite-validation.md) for synthetic document comparisons, and [UPSTREAM.toml](UPSTREAM.toml) for source/build-input pins. Upstream release workflows are archived as `.upstream`; the fork's CI is manual and cannot publish a release.
+See [HANDOFF.md](HANDOFF.md) for verified results and remaining acceptance work, [suite validation](docs/suite-validation.md) for synthetic document comparisons, and [UPSTREAM.toml](UPSTREAM.toml) for source/build-input pins. Upstream release workflows are archived as `.upstream`; the fork's CI checks pull requests and integration branches without publishing a release.
 
 ---
 

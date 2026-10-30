@@ -1,6 +1,6 @@
-## OmaOffice lifecycle
+## OmaCraft lifecycle
 
-This repository is one component of https://github.com/ustaaa/omaoffice.
+This repository is one component of https://github.com/ustaaa/omacraft.
 The owner authorized establishing fork commits, private coordination repositories and
 reviewable GitHub branches for the current lifecycle task. This supersedes older
 Nomura-only coordination and private-host CHECKPOINT requirements for that task.

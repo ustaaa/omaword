@@ -2,8 +2,8 @@
 
 ## Development lifecycle
 
-OmaOffice coordinates exact revisions, independent reviews and cross-platform evidence at
-https://github.com/ustaaa/omaoffice. This repository keeps its own upstream history.
+OmaCraft coordinates exact revisions, independent reviews and cross-platform evidence at
+https://github.com/ustaaa/omacraft. This repository keeps its own upstream history.
 Use origin for the Oma fork and upstream for the original project. Work on a topic branch,
 review the diff, run relevant gates, and open a draft pull request. Do not automatically
 publish releases or overwrite another device's dirty checkout.
@@ -28,3 +28,11 @@ Review downstream identity, theme isolation, font reload, package/updater separa
 and the declared support matrix. Revalidate at the exact reviewed commit and record
 compiler, target, commands, result, skipped checks and logs. Keep private machine paths,
 notebooks, credentials and infrastructure inventory out of tracked reports.
+
+### OmaCraft brand polish (2026-10-30)
+Suite links and documentation now use ustaaa/omacraft. Original application icon
+regenerated in the shared dark-tile/paper style, with a distinct application accent.
+PNG/SVG/ICO structure (where applicable), deterministic regeneration and whitespace
+checks passed. No engine, document, command, dependency or version changes.
+Installed-app validation of these new assets is still pending; previous runtime
+evidence does not cover this polish. Existing CI limitations remain open.
