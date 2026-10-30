@@ -197,7 +197,7 @@ A start from a desktop menu or the Dock has no terminal, so this file is what to
 report: unreadable parts of a .docx, pictures or fonts a PDF export had to leave out and panics the
 command guard recovered from land there. Each launch moves the previous log to `wordcraft.1.log`
 (and that one to `wordcraft.2.log`), so the log of a run that crashed survives the next start; a
-log stops growing at 16 MiB. `--version` writes no file, and runs with `WORDCRAFT_NO_PREFS` (agents'
+log stops growing at 16 MiB. `--version` writes no file, and runs with `OMAWORD_NO_PREFS` (agents'
 test runs) log to standard error only. Document text is never logged; a panic message leaves out
 the text it quotes.
 

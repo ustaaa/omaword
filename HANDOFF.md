@@ -49,3 +49,12 @@ Theme selection now promotes a valid preferred root after legacy removal, preser
 last good snapshot during invalid updates, and checks/deduplicates HOME/.local/state
 beside custom XDG_STATE_HOME. X11 override accepts only `=1`. Focused Cargo tests were
 blocked before compile by the unwritable shared Cargo git database; rustfmt passed.
+
+### Upstream variable isolation by Claude (2026-10-31; branch claude/identity-env)
+Running without preferences is now `OMAWORD_NO_PREFS`; `WORDCRAFT_NO_PREFS` is no longer
+read, so an upstream WordCraft test setting cannot switch off OmaWord preferences or
+recovery. The control port was already `OMAWORD_CONTROL_PORT` only; its help text and
+the three app integration tests still set the upstream names and so no longer tested
+anything, and now use the OmaWord names. Behaviour switches (`WORDCRAFT_REGION`,
+`_LANGUAGE`, `_DICTIONARIES`, `_SPEECH`, `_FILE_DIALOG`, `_PASSWORD`, `_CARET_GLIDE_MS`)
+and `WORDCRAFT_WAYLAND` keep their upstream names. The fonts crate change is a comment.

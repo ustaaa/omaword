@@ -5,7 +5,7 @@
 //! launch from a desktop menu has no terminal, so the file is what a bug report can attach:
 //! `<settings dir>/logs/wordcraft.log`, next to the preferences (`prefs_path` in `main.rs`). Each
 //! start moves the previous log to `wordcraft.1.log` (and that one to `.2`), so the log of a run
-//! that crashed survives the next launch. Runs without preferences (`WORDCRAFT_NO_PREFS`) log to
+//! that crashed survives the next launch. Runs without preferences (`OMAWORD_NO_PREFS`) log to
 //! standard error only.
 //!
 //! Levels: `info` for WordCraft's own crates, `warn` for everything else (wgpu and naga are

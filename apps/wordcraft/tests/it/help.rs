@@ -9,8 +9,8 @@ fn app(flag: &str) -> Output {
         // With no display, an app that tries to open a window fails at once instead.
         .env_remove("DISPLAY")
         .env_remove("WAYLAND_DISPLAY")
-        .env_remove("WORDCRAFT_CONTROL_PORT")
-        .env("WORDCRAFT_NO_PREFS", "1")
+        .env_remove("OMAWORD_CONTROL_PORT")
+        .env("OMAWORD_NO_PREFS", "1")
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

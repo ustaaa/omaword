@@ -11,8 +11,8 @@ fn app(args: &[&str]) -> Output {
         .env_remove("WAYLAND_DISPLAY")
         .env_remove("WAYLAND_SOCKET")
         // A bad `--control` must not fall back to this port either.
-        .env("WORDCRAFT_CONTROL_PORT", "7981")
-        .env("WORDCRAFT_NO_PREFS", "1")
+        .env("OMAWORD_CONTROL_PORT", "7981")
+        .env("OMAWORD_NO_PREFS", "1")
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

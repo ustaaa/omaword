@@ -2,7 +2,7 @@
 //!
 //! Usage: `wordcraft [--control <port>] [--sample] [files…]`; `--help` prints `USAGE`.
 //!
-//! `--control <port>` (or `WORDCRAFT_CONTROL_PORT`) starts a localhost JSON-lines control server:
+//! `--control <port>` (or `OMAWORD_CONTROL_PORT`) starts a localhost JSON-lines control server:
 //! `{"id":1,"key":"…","method":"engine.execute","params":{"command":"text.insert","params":{"text":"Hi"}}}`.
 //! Every request needs the key the app writes to `<settings>/control-key.<instance>` (mode 0600,
 //! removed on exit). See `docs/control-protocol.md`.
@@ -186,9 +186,15 @@ fn load_user_dictionary(app: &mut WordApp) {
     }
 }
 
-/// Runs without preferences (`WORDCRAFT_NO_PREFS`, agents' test runs) neither read nor write them.
+/// Runs without preferences (`OMAWORD_NO_PREFS`, agents' test runs) neither read nor write them.
 fn prefs_enabled() -> bool {
-    std::env::var_os("WORDCRAFT_NO_PREFS").is_none()
+    prefs_enabled_from(|name| std::env::var_os(name))
+}
+
+/// Only OmaWord's own name is read. The upstream WordCraft switch, exported for WordCraft
+/// runs, must not turn off OmaWord's preferences and recovery.
+fn prefs_enabled_from(var: impl Fn(&str) -> Option<std::ffi::OsString>) -> bool {
+    var("OMAWORD_NO_PREFS").is_none()
 }
 
 fn load_prefs(app: &mut WordApp) {
@@ -300,7 +306,7 @@ USAGE:
 OPTIONS:
   --sample            open the sample document
   --control PORT      start the localhost control server on PORT, for agents and scripts
-                      (or set WORDCRAFT_CONTROL_PORT); see docs/control-protocol.md
+                      (or set OMAWORD_CONTROL_PORT); see docs/control-protocol.md
   --version           print the version
   -h, --help          print this help
 ";
@@ -529,6 +535,12 @@ fn main() -> eframe::Result {
 #[cfg(all(test, unix, not(target_os = "macos")))]
 mod tests {
     use super::*;
+
+    #[test]
+    fn only_omaword_names_switch_off_preferences() {
+        assert!(prefs_enabled_from(|name| (name == "WORDCRAFT_NO_PREFS").then(|| "1".into())));
+        assert!(!prefs_enabled_from(|name| (name == "OMAWORD_NO_PREFS").then(|| "1".into())));
+    }
 
     #[test]
     fn only_one_enables_x11_override() {
