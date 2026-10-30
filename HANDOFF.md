@@ -36,3 +36,10 @@ PNG/SVG/ICO structure (where applicable), deterministic regeneration and whitesp
 checks passed. No engine, document, command, dependency or version changes.
 Installed-app validation of these new assets is still pending; previous runtime
 evidence does not cover this polish. Existing CI limitations remain open.
+
+### Suite review follow-up (2026-10-31)
+Linux pilot policy now documents native Wayland and `OMAWORD_X11=1`; legacy
+`WORDCRAFT_WAYLAND` remains accepted. The upstream WordCraft Linux packager and
+Flatpak bundler fail clearly as disabled; the active OmaWord package derives its
+version from Cargo metadata. The `OmaWord User` author default remains, documented as
+format-visible. Shell syntax and diff whitespace checks pass; Rust build/runtime not run.

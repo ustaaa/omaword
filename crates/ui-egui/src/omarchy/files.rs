@@ -27,13 +27,33 @@ pub(super) fn read_bounded(path: &Path, limit: usize) -> Option<Vec<u8>> {
 
 /// Select the highest-priority active root once. A broken/incomplete v4 update must not
 /// temporarily flash an old v3 palette. Both files and directory symlinks are re-read each poll.
-pub(super) fn read_palette(roots: &[PathBuf], selected: &mut Option<PathBuf>) -> Option<Palette> {
-    if selected.is_none() {
-        *selected = roots.iter().find(|p| p.join("colors.toml").is_file()).cloned();
-    }
-    let root = selected.as_ref()?;
+fn palette_at(root: &Path) -> Option<Palette> {
     let bytes = read_bounded(&root.join("colors.toml"), MAX_PALETTE)?;
     Palette::parse(std::str::from_utf8(&bytes).ok()?, root.join("light.mode").is_file())
+}
+
+/// Keep the selected root until a higher-priority root has a valid palette. Once selected,
+/// an invalid or missing palette returns `None` so callers retain their last good snapshot.
+pub(super) fn read_palette(roots: &[PathBuf], selected: &mut Option<PathBuf>) -> Option<Palette> {
+    if let Some(root) = selected.as_ref() {
+        let palette = palette_at(root)?;
+        if let Some(index) = roots.iter().position(|candidate| candidate == root) {
+            for preferred in &roots[..index] {
+                if let Some(palette) = palette_at(preferred) {
+                    *selected = Some(preferred.clone());
+                    return Some(palette);
+                }
+            }
+        }
+        return Some(palette);
+    }
+    for root in roots {
+        if let Some(palette) = palette_at(root) {
+            *selected = Some(root.clone());
+            return Some(palette);
+        }
+    }
+    None
 }
 
 #[cfg(test)]
@@ -65,6 +85,31 @@ mod tests {
         assert!(read_palette(std::slice::from_ref(&root), &mut selected).is_none());
         std::fs::write(root.join("colors.toml"), "background='#eeeeee'\nforeground='#111111'").unwrap();
         assert_ne!(read_palette(std::slice::from_ref(&root), &mut selected).unwrap(), first);
+        std::fs::remove_dir_all(base).unwrap();
+    }
+    #[test]
+    fn promotes_legacy_root_only_after_preferred_palette_is_valid() {
+        let base = std::env::temp_dir().join(format!("omaword-theme-priority-test-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&base);
+        let state = base.join("state");
+        let legacy = base.join("legacy");
+        std::fs::create_dir_all(&state).unwrap();
+        std::fs::create_dir_all(&legacy).unwrap();
+        std::fs::write(state.join("colors.toml"), "partial=").unwrap();
+        std::fs::write(legacy.join("colors.toml"), "background='#eeeeee'\nforeground='#111111'").unwrap();
+        let roots = vec![state.clone(), legacy.clone()];
+        let mut selected = None;
+        let legacy_palette = read_palette(&roots, &mut selected).unwrap();
+        assert_eq!(selected.as_deref(), Some(legacy.as_path()));
+
+        std::fs::write(state.join("colors.toml"), "background='#101010'\nforeground='#ffffff'").unwrap();
+        let state_palette = read_palette(&roots, &mut selected).unwrap();
+        assert_ne!(state_palette, legacy_palette);
+        assert_eq!(selected.as_deref(), Some(state.as_path()));
+
+        std::fs::write(state.join("colors.toml"), "partial=").unwrap();
+        assert!(read_palette(&roots, &mut selected).is_none());
+        assert_eq!(selected.as_deref(), Some(state.as_path()));
         std::fs::remove_dir_all(base).unwrap();
     }
 }

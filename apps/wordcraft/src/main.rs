@@ -431,9 +431,13 @@ fn main() -> eframe::Result {
         options.viewport = window.apply(options.viewport);
     }
     #[cfg(all(unix, not(target_os = "macos")))]
-    // Preserve upstream's backend default until physical clipboard/drop/portal acceptance.
-    // The native Wayland pilot is explicit; X11 remains available as an override.
-    if std::env::var_os("OMAWORD_X11").is_some() || (std::env::var_os("DISPLAY").is_some() && std::env::var_os("OMAWORD_WAYLAND").is_none()) {
+    // Linux pilot policy: launchers opt into native Wayland for direct compositor scaling.
+    // OMAWORD_X11=1 forces X11; WORDCRAFT_WAYLAND remains accepted for existing scripts.
+    if std::env::var_os("OMAWORD_X11").is_some()
+        || (std::env::var_os("DISPLAY").is_some()
+            && std::env::var_os("OMAWORD_WAYLAND").is_none()
+            && std::env::var_os("WORDCRAFT_WAYLAND").is_none())
+    {
         options.event_loop_builder = Some(Box::new(|b| {
             use winit::platform::x11::EventLoopBuilderExtX11;
             b.with_x11();

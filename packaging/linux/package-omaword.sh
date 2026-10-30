@@ -2,10 +2,10 @@
 # Package the already-verified native release binaries, preserving third-party notices.
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
+. "$ROOT/packaging/env.sh"
 TARGET=${CARGO_TARGET_DIR:-$ROOT/target}
 FONT_DIR=${CRAFT_FONTS_DIR:?Set CRAFT_FONTS_DIR to the pinned font checkout used for the build}
 I18N_DIR=${CRAFT_I18N_DIR:?Set CRAFT_I18N_DIR to the pinned translation checkout}
-VERSION=0.12.0
 ARCH=$(uname -m)
 case "$ARCH" in aarch64|x86_64) ;; *) echo "Unsupported architecture: $ARCH" >&2; exit 2;; esac
 BASE="omaword-$VERSION-linux-$ARCH"

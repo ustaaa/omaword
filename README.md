@@ -6,10 +6,11 @@ Part of [OmaCraft](https://github.com/ustaaa/omacraft) - a friendly fork of ArtC
 OmaWord adapts [WordCraft v0.12.0](https://github.com/storytold/wordcraft/releases/tag/v0.12.0) for Omarchy. The document engine, layout, formats, commands and ribbon remain upstream. The fork adds live Omarchy v3/v4 chrome, fontconfig monospace interface fonts, an explicit native Wayland pilot, and an isolated application identity. Original WordCraft and contributor attribution remains below and in the license files.
 
 - GUI / CLI: `omaword`, `omaword-cli`; desktop ID: `io.github.ustaaa.OmaWord`.
+- Known format-visible exception: new profiles default to author `OmaWord User`; saved documents can contain this value in document metadata and tracked changes.
 - Settings, recovery, templates, fonts and control keys: `~/.config/omaword` (`OMAWORD_PROFILE_DIR` overrides it). The upstream `WORDCRAFT_PROFILE_DIR` override is deliberately not inherited, so it cannot silently share the original application's data.
 - Interface System follows Omarchy; manual Light/Dark stays fixed. Document page typography, annotations, file content and undo history are unchanged by appearance. The 27 upstream interface catalogs are built from their exact pin; new fork-only labels fall back to English.
 - Updates are installation-managed. The fork never checks for or installs an upstream WordCraft binary.
-- Linux user-local package: `packaging/linux/package-omaword.sh`, then `packaging/linux/install-pilot.sh ARCHIVE UNIQUE_VERSION`. The installer validates architecture, preserves version folders and refuses unrelated existing files. It does not claim MIME defaults. Use `OMAWORD_WAYLAND=1` for the native Wayland pilot or `OMAWORD_X11=1` to force X11. The binary retains upstream’s XWayland fallback when DISPLAY is available; the installed Omarchy pilot launcher explicitly sets OMAWORD_WAYLAND=1 to follow compositor scaling. Physical clipboard/drop/portal acceptance remains outstanding.
+- Linux user-local package: `packaging/linux/package-omaword.sh`, then `packaging/linux/install-pilot.sh ARCHIVE UNIQUE_VERSION`. The installer validates architecture, preserves version folders and refuses unrelated existing files. It does not claim MIME defaults. The launcher selects native Wayland; set `OMAWORD_X11=1` to force X11. Physical clipboard/drop/portal acceptance remains outstanding. Upstream WordCraft `package.sh` and `flatpak-bundle.sh` are intentionally disabled in this fork.
 
 See [HANDOFF.md](HANDOFF.md) for verified results and remaining acceptance work, [suite validation](docs/suite-validation.md) for synthetic document comparisons, and [UPSTREAM.toml](UPSTREAM.toml) for source/build-input pins. Upstream release workflows are archived as `.upstream`; the fork's CI checks pull requests and integration branches without publishing a release.
 
@@ -303,13 +304,13 @@ adapter. The log file records the choice (lines starting with
 RISC-V (riscv64): `wordcraft-<ver>-linux-riscv64.tar.gz`, a tarball cross-compiled for glibc 2.39+
 (Ubuntu 24.04, Debian 13 and newer).
 
-**Wayland:** on a Wayland desktop the app runs through XWayland when it is available, because
-winit (the windowing library) supports dragging files into the window only on X11. To use the
-native Wayland backend instead (for example for sharper text with fractional scaling, at the cost
-of file drag-and-drop), start it with `WORDCRAFT_WAYLAND=1`:
+**Wayland:** Linux pilot launchers select native Wayland for direct compositor scaling. Set
+`OMAWORD_X11=1` to force X11 when an X server is available, or unset `OMAWORD_WAYLAND` and legacy
+`WORDCRAFT_WAYLAND` to let winit choose its backend. The legacy alias remains accepted for
+existing scripts. File-drop, clipboard and portal behavior remain runtime validation gates.
 
 ```sh
-WORDCRAFT_WAYLAND=1 wordcraft
+OMAWORD_WAYLAND=1 omaword
 ```
 
 **Arch Linux (AUR).** Community members maintain three AUR packages; the project doesn't publish
