@@ -4,9 +4,15 @@ use std::path::{Path, PathBuf};
 
 pub(super) fn roots(state: Option<PathBuf>, config: Option<PathBuf>, home: Option<PathBuf>) -> Vec<PathBuf> {
     let absolute = |p: Option<PathBuf>| p.filter(|p| p.is_absolute());
-    let state = absolute(state).or_else(|| home.as_ref().map(|h| h.join(".local/state")));
-    let config = absolute(config).or_else(|| home.map(|h| h.join(".config")));
-    state.into_iter().chain(config).map(|p| p.join("omarchy/current/theme")).collect()
+    let home_state = home.as_ref().map(|h| h.join(".local/state"));
+    let home_config = home.map(|h| h.join(".config"));
+    let mut roots = Vec::new();
+    for root in [absolute(state), home_state, absolute(config), home_config].into_iter().flatten().map(|p| p.join("omarchy/current/theme")) {
+        if !roots.contains(&root) {
+            roots.push(root);
+        }
+    }
+    roots
 }
 
 pub(super) fn read_bounded(path: &Path, limit: usize) -> Option<Vec<u8>> {
@@ -32,11 +38,11 @@ fn palette_at(root: &Path) -> Option<Palette> {
     Palette::parse(std::str::from_utf8(&bytes).ok()?, root.join("light.mode").is_file())
 }
 
-/// Keep the selected root until a higher-priority root has a valid palette. Once selected,
-/// an invalid or missing palette returns `None` so callers retain their last good snapshot.
+/// Promote a selected legacy root as soon as a preferred root becomes valid. If the selected
+/// root is temporarily invalid and no preferred root is ready, return `None` so callers retain
+/// their last good snapshot instead of switching to a lower-priority root.
 pub(super) fn read_palette(roots: &[PathBuf], selected: &mut Option<PathBuf>) -> Option<Palette> {
     if let Some(root) = selected.as_ref() {
-        let palette = palette_at(root)?;
         if let Some(index) = roots.iter().position(|candidate| candidate == root) {
             for preferred in &roots[..index] {
                 if let Some(palette) = palette_at(preferred) {
@@ -45,7 +51,7 @@ pub(super) fn read_palette(roots: &[PathBuf], selected: &mut Option<PathBuf>) ->
                 }
             }
         }
-        return Some(palette);
+        return palette_at(root);
     }
     for root in roots {
         if let Some(palette) = palette_at(root) {
@@ -63,12 +69,25 @@ mod tests {
     fn xdg_paths_and_relative_values_follow_the_spec() {
         assert_eq!(
             roots(Some("/state".into()), Some("/config".into()), Some("/home/test".into())),
-            vec![PathBuf::from("/state/omarchy/current/theme"), PathBuf::from("/config/omarchy/current/theme")]
+            vec![
+                PathBuf::from("/state/omarchy/current/theme"),
+                PathBuf::from("/home/test/.local/state/omarchy/current/theme"),
+                PathBuf::from("/config/omarchy/current/theme")
+            ]
         );
         assert_eq!(
             roots(Some("relative".into()), None, Some("/home/test".into()))[0],
             PathBuf::from("/home/test/.local/state/omarchy/current/theme")
         );
+        assert_eq!(
+            roots(Some("/xdg/state".into()), None, Some("/home/test".into())),
+            vec![
+                PathBuf::from("/xdg/state/omarchy/current/theme"),
+                PathBuf::from("/home/test/.local/state/omarchy/current/theme"),
+                PathBuf::from("/home/test/.config/omarchy/current/theme")
+            ]
+        );
+        assert_eq!(roots(Some("/home/test/.local/state".into()), None, Some("/home/test".into())).len(), 2, "duplicate state roots are removed");
         assert!(roots(None, None, None).is_empty());
     }
     #[test]
@@ -93,13 +112,20 @@ mod tests {
         let _ = std::fs::remove_dir_all(&base);
         let state = base.join("state");
         let legacy = base.join("legacy");
+        let config = base.join("config");
         std::fs::create_dir_all(&state).unwrap();
         std::fs::create_dir_all(&legacy).unwrap();
+        std::fs::create_dir_all(&config).unwrap();
         std::fs::write(state.join("colors.toml"), "partial=").unwrap();
         std::fs::write(legacy.join("colors.toml"), "background='#eeeeee'\nforeground='#111111'").unwrap();
-        let roots = vec![state.clone(), legacy.clone()];
+        std::fs::write(config.join("colors.toml"), "background='#dddddd'\nforeground='#222222'").unwrap();
+        let roots = vec![state.clone(), legacy.clone(), config];
         let mut selected = None;
         let legacy_palette = read_palette(&roots, &mut selected).unwrap();
+        assert_eq!(selected.as_deref(), Some(legacy.as_path()));
+
+        std::fs::remove_file(legacy.join("colors.toml")).unwrap();
+        assert!(read_palette(&roots, &mut selected).is_none());
         assert_eq!(selected.as_deref(), Some(legacy.as_path()));
 
         std::fs::write(state.join("colors.toml"), "background='#101010'\nforeground='#ffffff'").unwrap();
@@ -109,6 +135,8 @@ mod tests {
 
         std::fs::write(state.join("colors.toml"), "partial=").unwrap();
         assert!(read_palette(&roots, &mut selected).is_none());
+        assert_eq!(selected.as_deref(), Some(state.as_path()));
+        assert!(read_palette(&roots, &mut selected).is_none(), "do not fall back to the valid lower-priority config root");
         assert_eq!(selected.as_deref(), Some(state.as_path()));
         std::fs::remove_dir_all(base).unwrap();
     }

@@ -347,6 +347,10 @@ fn open_non_unicode(app: &mut WordApp, path: &std::path::Path) {
 /// Parses the command line, installs logging and the panic hook, restores preferences and window
 /// geometry, opens requested documents or the Start screen, starts the control server when
 /// asked, and runs the eframe event loop.
+fn x11_override(value: Option<&std::ffi::OsStr>) -> bool {
+    value == Some(std::ffi::OsStr::new("1"))
+}
+
 fn main() -> eframe::Result {
     // First, so the panic hook and every start-up warning are recorded (`logging`).
     let logger = logging::install();
@@ -433,10 +437,8 @@ fn main() -> eframe::Result {
     #[cfg(all(unix, not(target_os = "macos")))]
     // Linux pilot policy: launchers opt into native Wayland for direct compositor scaling.
     // OMAWORD_X11=1 forces X11; WORDCRAFT_WAYLAND remains accepted for existing scripts.
-    if std::env::var_os("OMAWORD_X11").is_some()
-        || (std::env::var_os("DISPLAY").is_some()
-            && std::env::var_os("OMAWORD_WAYLAND").is_none()
-            && std::env::var_os("WORDCRAFT_WAYLAND").is_none())
+    if x11_override(std::env::var_os("OMAWORD_X11").as_deref())
+        || (std::env::var_os("DISPLAY").is_some() && std::env::var_os("OMAWORD_WAYLAND").is_none() && std::env::var_os("WORDCRAFT_WAYLAND").is_none())
     {
         options.event_loop_builder = Some(Box::new(|b| {
             use winit::platform::x11::EventLoopBuilderExtX11;
@@ -526,6 +528,14 @@ fn main() -> eframe::Result {
 #[cfg(all(test, unix, not(target_os = "macos")))]
 mod tests {
     use super::*;
+
+    #[test]
+    fn only_one_enables_x11_override() {
+        assert!(x11_override(Some(std::ffi::OsStr::new("1"))));
+        assert!(!x11_override(Some(std::ffi::OsStr::new("0"))));
+        assert!(!x11_override(Some(std::ffi::OsStr::new(""))));
+        assert!(!x11_override(None));
+    }
     use std::os::unix::ffi::OsStringExt;
 
     #[test]

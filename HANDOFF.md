@@ -43,3 +43,9 @@ Linux pilot policy now documents native Wayland and `OMAWORD_X11=1`; legacy
 Flatpak bundler fail clearly as disabled; the active OmaWord package derives its
 version from Cargo metadata. The `OmaWord User` author default remains, documented as
 format-visible. Shell syntax and diff whitespace checks pass; Rust build/runtime not run.
+
+### Candidate 2 review fixes (2026-10-31)
+Theme selection now promotes a valid preferred root after legacy removal, preserves the
+last good snapshot during invalid updates, and checks/deduplicates HOME/.local/state
+beside custom XDG_STATE_HOME. X11 override accepts only `=1`. Focused Cargo tests were
+blocked before compile by the unwritable shared Cargo git database; rustfmt passed.
