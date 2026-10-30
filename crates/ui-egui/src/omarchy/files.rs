@@ -72,7 +72,8 @@ mod tests {
             vec![
                 PathBuf::from("/state/omarchy/current/theme"),
                 PathBuf::from("/home/test/.local/state/omarchy/current/theme"),
-                PathBuf::from("/config/omarchy/current/theme")
+                PathBuf::from("/config/omarchy/current/theme"),
+                PathBuf::from("/home/test/.config/omarchy/current/theme")
             ]
         );
         assert_eq!(

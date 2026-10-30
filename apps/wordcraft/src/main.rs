@@ -347,6 +347,7 @@ fn open_non_unicode(app: &mut WordApp, path: &std::path::Path) {
 /// Parses the command line, installs logging and the panic hook, restores preferences and window
 /// geometry, opens requested documents or the Start screen, starts the control server when
 /// asked, and runs the eframe event loop.
+#[cfg(any(test, all(unix, not(target_os = "macos"))))]
 fn x11_override(value: Option<&std::ffi::OsStr>) -> bool {
     value == Some(std::ffi::OsStr::new("1"))
 }
