@@ -2,7 +2,7 @@ name: OmaWord checks
 
 on:
   push:
-    branches: [main]
+    branches: [main, pilot]
   pull_request:
   workflow_dispatch:
 
