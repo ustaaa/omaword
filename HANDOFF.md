@@ -84,10 +84,10 @@ removes upstream network updater behavior. This retains Omarchy palette/fonts an
 ribbon patches while accepting upstream command, document, table, printing and
 localization work.
 
-Upstream workspace diff adds `wordcraft-metafile` to formats and includes upstream's
-`craft-update` revision change (`92d392c…` to `04aa170…`); the former is required by
-new format code, and the latter remains compiled but is not invoked by OmaWord's
-installation-managed update UI. No downstream font or catalog revision was changed;
+Upstream workspace diff adds `wordcraft-metafile` to formats. The upstream `craft-update`
+dependency and app metadata were removed from OmaWord because no installation-managed
+update path calls the crate; upstream's Windows self-update finalizer is omitted. No
+downstream font or catalog revision was changed;
 `craft-i18n.rev` remains `9205108cfdced5177706264038848b68b2422d2b`. At this preparation
 host, rustc/cargo are 1.99.1; `CRAFT_FONTS_DIR`, `CRAFT_I18N_DIR`, and
 `CARGO_TARGET_DIR` are unset. Thus this host supplied no external font/catalog inputs;
@@ -95,3 +95,15 @@ font and localization build evidence is delegated to the designated Halo validat
 Local checks: `cargo fmt --all -- --check` passed; `git diff --check` passed. No compile,
 tests, font build or i18n embedding was run here. This is an integration candidate only;
 not pushed, merged to pilot/main, tagged, or deployed.
+
+### Identity-boundary follow-up (2026-11-01)
+The suite identity checker found two inherited upstream artifacts in the candidate:
+`UPDATE_APP` still exposed WordCraft's original updater icon/app metadata, and the new
+FreeBSD package script still emitted the WordCraft app ID. Removed `UPDATE_APP` and the
+unused `craft-update` dependency from the workspace/UI manifests and regenerated the lock
+through Cargo metadata. Preserved the upstream FreeBSD script as
+`packaging/freebsd/package.sh.upstream`; it is not an active OmaWord package entry.
+Validation: `check_identity.py --root /Users/irtek/Development/omacraft-integration-20261101
+--only omaword` passed; `cargo fmt --all -- --check`, `cargo metadata --locked
+--format-version 1 --no-deps`, full locked `cargo metadata`, and `git diff --check` passed.
+Full metadata reported only existing unused egui patch warnings. No compile or tests run.
