@@ -382,7 +382,7 @@ fn main() -> eframe::Result {
             "--version" => {
                 println!(
                     "OmaWord {} (upstream WordCraft {}; {})",
-                    include_str!("../../../oma-version.txt").trim(),
+                    include_str!("../../../oma-version.txt").trim_ascii(),
                     env!("CARGO_PKG_VERSION"),
                     build_sha()
                 );
@@ -411,7 +411,7 @@ fn main() -> eframe::Result {
             Some(dir) => match logger.attach_dir(&dir) {
                 Ok(path) => log::info!(
                     "OmaWord {} (upstream WordCraft {}; {}), log file {}",
-                    include_str!("../../../oma-version.txt").trim(),
+                    include_str!("../../../oma-version.txt").trim_ascii(),
                     env!("CARGO_PKG_VERSION"),
                     build_sha(),
                     path.display()

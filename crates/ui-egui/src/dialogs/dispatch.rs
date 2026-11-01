@@ -1087,7 +1087,7 @@ fn about_dialog(ui: &mut Ui, d: &mut Dialog) -> bool {
             let build = option_env!("WORDCRAFT_BUILD_SHA").map(|s| s.get(..8).unwrap_or(s)).unwrap_or(tl!("development build"));
             ui.label(crate::i18n::fmt(
                 tl!("Version {version} ({build})"),
-                &[("version", include_str!("../../../oma-version.txt").trim()), ("build", build)],
+                &[("version", include_str!("../../../oma-version.txt").trim_ascii()), ("build", build)],
             ));
             ui.label(format!(
                 "Omarchy desktop adaptation of WordCraft v{}. Document engine and file formats remain upstream.",
