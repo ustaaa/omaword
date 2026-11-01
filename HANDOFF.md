@@ -66,3 +66,32 @@ separately. The Linux pilot package uses the downstream label and includes `VERS
 with both versions. Cargo package versions and lockfile are unchanged. Rust builds/runtime
 and package artifact verification are delegated to Halo; local formatting, shell syntax
 and diff whitespace checks passed.
+
+### WordCraft 0.13.2 integration candidate (2026-11-01)
+Isolated integration branch `codex/upstream-word-0.13.2` starts at OmaWord alpha 1
+`cefcb752f17cd3c62d1a2c5ea2046390164361df` and merges upstream tag `v0.13.2`,
+resolved to `2be33e6dc9c246a57995b131ee85491ce81de328`. Kept workspace/Cargo package
+version at upstream `0.13.2`; `OMA_VERSION` is `0.13.2-oma.1.alpha.1` so the UI and
+CLI continue to report both identities correctly.
+
+Resolved four true merge conflicts: AGENTS.md combines OmaWord lifecycle/delegation
+instructions with upstream CI guidance; Cargo.lock takes upstream's refreshed lock,
+then retains the fork's `craft-platform` appearance dependency (including its lock
+entry) and exact app version split; `apps/wordcraft/src/main.rs` keeps OmaWord X11,
+identity and preference handling and omits upstream's Windows self-update finalizer;
+`crates/ui-egui/src/updates_ui.rs` keeps the installation-managed update notice and
+removes upstream network updater behavior. This retains Omarchy palette/fonts and
+ribbon patches while accepting upstream command, document, table, printing and
+localization work.
+
+Upstream workspace diff adds `wordcraft-metafile` to formats and includes upstream's
+`craft-update` revision change (`92d392c…` to `04aa170…`); the former is required by
+new format code, and the latter remains compiled but is not invoked by OmaWord's
+installation-managed update UI. No downstream font or catalog revision was changed;
+`craft-i18n.rev` remains `9205108cfdced5177706264038848b68b2422d2b`. At this preparation
+host, rustc/cargo are 1.99.1; `CRAFT_FONTS_DIR`, `CRAFT_I18N_DIR`, and
+`CARGO_TARGET_DIR` are unset. Thus this host supplied no external font/catalog inputs;
+font and localization build evidence is delegated to the designated Halo validation.
+Local checks: `cargo fmt --all -- --check` passed; `git diff --check` passed. No compile,
+tests, font build or i18n embedding was run here. This is an integration candidate only;
+not pushed, merged to pilot/main, tagged, or deployed.

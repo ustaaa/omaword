@@ -102,3 +102,8 @@ The owner authorized this Omarchy adaptation, GitHub fork, local installation an
 ## Cost-aware delegation
 
 For routine coding, identity renames, packaging, test helpers, and documentation, delegate to Halogen or another explicitly selected lower-cost subagent. Reserve Astra for architecture, difficult debugging, and final review when needed. Subagents inherit the parent model unless explicitly selected, so always specify the intended lower-cost model for routine work. Verify generated changes and tests. If Halogen is unavailable, do independent useful work or use a suitable lower-cost alternative, and report the limitation; do not silently move bulk work to a costly model. Do not change providers, global defaults, or infrastructure.
+
+## CI workflows
+- Workflows in `.github/workflows/` call the shared workflows in [`storytold/craft-common-actions`](https://github.com/storytold/craft-common-actions) at `@main`, with their inputs and secrets. No other jobs: if no shared workflow does what's needed, it doesn't go here.
+- Don't add or change CI in a feature or fix PR. If the existing workflows can't build or test a change, link an existing craft-common-actions issue or PR, or open a new issue, or a PR only for a small fix that is safe for every app and does not increase CI time.
+- Some workflow files here still run their own jobs. Don't add to them. Moving a job into craft-common-actions is its own task, never part of another PR, and the job stays here until a shared workflow runs it.
