@@ -1087,12 +1087,9 @@ fn about_dialog(ui: &mut Ui, d: &mut Dialog) -> bool {
             let build = option_env!("WORDCRAFT_BUILD_SHA").map(|s| s.get(..8).unwrap_or(s)).unwrap_or(tl!("development build"));
             ui.label(crate::i18n::fmt(
                 tl!("Version {version} ({build})"),
-                &[("version", include_str!("../../../oma-version.txt").trim_ascii()), ("build", build)],
+                &[("version", include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../OMA_VERSION")).trim_ascii()), ("build", build)],
             ));
-            ui.label(format!(
-                "Omarchy desktop adaptation of WordCraft v{}. Document engine and file formats remain upstream.",
-                env!("CARGO_PKG_VERSION")
-            ));
+            ui.label(tl!("Omarchy desktop adaptation of WordCraft v0.12.0.\nDocument engine and file formats remain upstream."));
             ui.add_space(6.0);
             ui.hyperlink_to(tl!("getartcraft.com/apps/wordcraft"), "https://getartcraft.com/apps/wordcraft");
             ui.hyperlink_to(tl!("Join us on Discord: discord.gg/artcraft"), "https://discord.gg/artcraft");

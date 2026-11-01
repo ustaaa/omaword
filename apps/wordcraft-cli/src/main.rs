@@ -696,7 +696,12 @@ fn run<S: AsRef<OsStr>>(args: &[S]) -> Result<(), Failure> {
             Ok(())
         }
         "--version" | "-V" => write_stdout(|o| {
-            writeln!(o, "omaword-cli {} (upstream WordCraft {})", include_str!("../../../oma-version.txt").trim_ascii(), env!("CARGO_PKG_VERSION"))
+            writeln!(
+                o,
+                "omaword-cli {} (upstream WordCraft {})",
+                include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../OMA_VERSION")).trim_ascii(),
+                env!("CARGO_PKG_VERSION")
+            )
         }),
         "" | "help" | "--help" | "-h" => write_stdout(|o| write!(o, "{USAGE}")),
         other => Err(format!("unknown command `{other}`\n\n{USAGE}").into()),

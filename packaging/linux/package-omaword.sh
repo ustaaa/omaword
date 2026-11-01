@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 . "$ROOT/packaging/env.sh"
 UPSTREAM_VERSION="$(workspace_version)"
-VERSION="$(tr -d '\r\n' < "$ROOT/oma-version.txt")"
+VERSION="$(tr -d '\r\n' < "$ROOT/OMA_VERSION")"
 [[ -n "$VERSION" ]] || { echo "error: empty OmaWord version label" >&2; exit 1; }
 TARGET=${CARGO_TARGET_DIR:-$ROOT/target}
 FONT_DIR=${CRAFT_FONTS_DIR:?Set CRAFT_FONTS_DIR to the pinned font checkout used for the build}
