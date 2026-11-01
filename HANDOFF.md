@@ -107,3 +107,6 @@ Validation: `check_identity.py --root /Users/irtek/Development/omacraft-integrat
 --only omaword` passed; `cargo fmt --all -- --check`, `cargo metadata --locked
 --format-version 1 --no-deps`, full locked `cargo metadata`, and `git diff --check` passed.
 Full metadata reported only existing unused egui patch warnings. No compile or tests run.
+
+## 2026-11-01 Claude upstream review corrections
+Full Halo cargo xtask ci passed all8 steps at a526d740. Added explicit fail-closed FreeBSD entrypoint to archived upstream packager (bash invocation exits2 without package). No runtime/source changes or deployment. Exact final-head validation and Claude re-review follow.
