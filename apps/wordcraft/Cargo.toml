@@ -4,8 +4,12 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish = false
-default-run = "wordcraft"
+default-run = "omaword"
 description = "WordCraft desktop app"
+
+[[bin]]
+name = "omaword"
+path = "src/main.rs"
 
 [lints]
 workspace = true
@@ -83,6 +87,3 @@ pollster = "1"
 arboard = { workspace = true, features = ["image-data"] }
 # The control server's random key.
 getrandom = "0.3"
-
-[target.'cfg(windows)'.dependencies]
-craft-update = { workspace = true }

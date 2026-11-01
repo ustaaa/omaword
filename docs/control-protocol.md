@@ -1,6 +1,6 @@
 # Control protocol
 
-Start the app with a control port: `wordcraft --control 7981` (or `WORDCRAFT_CONTROL_PORT=7981`).
+Start the app with a control port: `omaword --control 7981` (or `OMAWORD_CONTROL_PORT=7981`).
 A missing or invalid port after `--control` (not 1–65535) prints an error and exits with status 2.
 It listens on `127.0.0.1` only. Send one JSON object per line, with the window's key (see
 [Keys](#keys)); each gets one reply line:
@@ -19,14 +19,14 @@ connection (so an HTTP request sent to the port can't run a command); reconnect 
 Any local program (and possibly a web page) can reach a loopback port, so every request needs the
 window's key. Once the port is bound, the app writes a random key (256 bits, as hex) to
 `<settings>/control-key.<instance>` and removes the file when the window closes; a new start
-writes a new key. `WORDCRAFT_PROFILE_DIR` overrides the whole profile folder for isolated runs,
+writes a new key. `OMAWORD_PROFILE_DIR` overrides the whole profile folder for isolated runs,
 including recovery copies. See [local recovery](recovery.md). `<settings>` is the folder that holds the preferences: on Linux
-`$XDG_CONFIG_HOME/wordcraft` (by default `~/.config/wordcraft`), on macOS
-`~/Library/Application Support/WordCraft`, on Windows `%APPDATA%\WordCraft`. `<instance>` is the
+`$XDG_CONFIG_HOME/omaword` (by default `~/.config/omaword`), on macOS
+`~/Library/Application Support/OmaWord`, on Windows `%APPDATA%\OmaWord`. `<instance>` is the
 Flatpak instance id inside Flatpak, and `local-<port>` otherwise. On Unix the file has mode 0600.
 
 ```sh
-cat ~/.config/wordcraft/control-key.local-7981   # Linux, outside Flatpak, port 7981
+cat ~/.config/omaword/control-key.local-7981   # Linux, outside Flatpak, port 7981
 ```
 
 - Send the key as top-level `"key"` with every request, or once per connection with
@@ -41,14 +41,14 @@ cat ~/.config/wordcraft/control-key.local-7981   # Linux, outside Flatpak, port 
   one limit: blank lines and bad JSON do not extend it. After an authorised request the
   connection may stay idle.
 
-`wordcraft-cli mcp --connect` takes the key from `WORDCRAFT_CONTROL_KEY`, or else from the key
+`omaword-cli mcp --connect` takes the key from `OMAWORD_CONTROL_KEY`, or else from the key
 file for the port it connects to, and reads it again on every new connection (the app may have
 restarted). It sends the key only to the app's own address, `127.0.0.1` (`localhost` connects
 there too, never to `::1`): another loopback address such as `::1` or `127.0.0.2` is not where the
 app listens, so whoever listens there gets no key (#3699). For
 any other host it sends no key, says so, and the app refuses its requests: to drive an app on
 another machine, forward its port to `127.0.0.1` (for example `ssh -L 7981:127.0.0.1:7981 host`)
-and set `WORDCRAFT_CONTROL_KEY` to that app's key.
+and set `OMAWORD_CONTROL_KEY` to that app's key.
 
 ## Methods
 

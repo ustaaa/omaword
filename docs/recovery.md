@@ -39,7 +39,7 @@ unsaved documents leaves a copy of each, and the next start lists them all.
 
 Copies live in `recovery/` under the app's profile folder. `WORDCRAFT_PROFILE_DIR` selects a
 separate profile for isolated runs, including preferences, logs and control keys.
-`WORDCRAFT_NO_PREFS` disables recovery as well as preferences. Headless engine/CLI sessions
+`OMAWORD_NO_PREFS` disables recovery as well as preferences. Headless engine/CLI sessions
 and the browser do not create recovery files implicitly.
 
 One worker thread and one store serve every open document, so a record is locked once per

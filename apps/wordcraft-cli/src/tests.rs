@@ -89,7 +89,7 @@ fn help_or_h_after_a_subcommand_asks_for_the_usage() {
 fn usage_lists_exactly_the_subcommands() {
     let listed: Vec<&str> = USAGE
         .lines()
-        .filter_map(|line| line.strip_prefix("  wordcraft-cli ")?.split_whitespace().next())
+        .filter_map(|line| line.strip_prefix("  omaword-cli ")?.split_whitespace().next())
         .filter(|word| !word.starts_with(['-', '[']))
         .collect();
     assert_eq!(listed, SUBCOMMANDS);

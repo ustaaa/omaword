@@ -12,7 +12,7 @@ use wordcraft_layout::display::CommentDisplay;
 use wordcraft_layout::{DocLayout, Page, Placed};
 
 use crate::WordApp;
-use crate::theme::{Tokens, regular, semibold};
+use crate::theme::{Tokens, regular};
 
 mod balloons;
 mod context_menu;
@@ -1552,7 +1552,11 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
                     ui.ctx().request_repaint();
                 }
                 let color = caret_color(app);
-                let g = painter.layout_no_wrap(app.canvas.ime_preedit.clone(), regular(c.height * scale * 0.8), Color32::PLACEHOLDER);
+                let g = painter.layout_no_wrap(
+                    app.canvas.ime_preedit.clone(),
+                    crate::theme::document_regular(c.height * scale * 0.8),
+                    Color32::PLACEHOLDER,
+                );
                 let at = preedit_cursor_chars(&app.canvas.ime_preedit, app.canvas.ime_preedit_range.as_ref());
                 ime_dx = g.pos_from_cursor(egui::text::CCursor::new(at)).min.x;
                 let r = Rect::from_min_size(pos2(x, y1 - g.size().y), g.size());

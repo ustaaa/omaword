@@ -1,0 +1,6 @@
+repository = "https://github.com/storytold/wordcraft"
+tag = "v0.12.0"
+commit = "3de6ff95af86c19d67030cd96dba15cd6a45a25e"
+craft_fonts = "b076417b5880bd4154bd22f00695b1d28c6bea83"
+craft_i18n = "9205108cfdced5177706264038848b68b2422d2b"
+policy = "Keep document, font database, layout, rendering and file-format crates unchanged; merge upstream deliberately and rerun inherited gates plus appearance/document parity."

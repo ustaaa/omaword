@@ -2,6 +2,10 @@
 
 use std::sync::Arc;
 
+mod omarchy;
+pub use omarchy::set_omarchy_palette;
+pub(crate) use omarchy::{refresh_omarchy_fonts, with_omarchy_fonts};
+
 use egui::{Align2, Color32, CornerRadius, FontData, FontDefinitions, FontFamily, FontId, Rect, Stroke, Visuals};
 
 /// WordCraft's app colour (and its darker ink for text on light backgrounds).
@@ -230,7 +234,7 @@ impl From<Animations> for String {
 }
 
 /// Every colour the UI uses; widgets never hard-code colours.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Tokens {
     pub dark: bool,
     pub title_bar: Color32,
@@ -435,7 +439,7 @@ impl Tokens {
         }
     }
     pub fn get(ctx: &egui::Context) -> Tokens {
-        if ctx.global_style().visuals.dark_mode { Tokens::dark() } else { Tokens::light() }
+        omarchy::resolved(ctx, ctx.global_style().visuals.dark_mode)
     }
 }
 
@@ -486,7 +490,7 @@ pub fn install_fonts_language_extra(
 ) {
     let mut fonts = font_definitions_language(prefer_hans, prefer_korean, system_cjk);
     add_fallback_faces(&mut fonts, faces);
-    ctx.set_fonts(fonts);
+    ctx.set_fonts(with_omarchy_fonts(ctx, fonts));
 }
 
 /// Add `faces` after every other font of the interface families.
@@ -496,7 +500,14 @@ pub fn add_fallback_faces(fonts: &mut FontDefinitions, faces: &[Arc<wordcraft_fo
         let mut data = FontData::from_owned(f.data().to_vec());
         data.index = f.index();
         fonts.font_data.insert(name.clone(), Arc::new(data));
-        for fam in [FontFamily::Proportional, FontFamily::Name("medium".into()), FontFamily::Name("semibold".into())] {
+        for fam in [
+            FontFamily::Proportional,
+            FontFamily::Name("medium".into()),
+            FontFamily::Name("semibold".into()),
+            FontFamily::Name("omaword-ui".into()),
+            FontFamily::Name("omaword-medium".into()),
+            FontFamily::Name("omaword-semibold".into()),
+        ] {
             if let Some(v) = fonts.families.get_mut(&fam) {
                 v.push(name.clone());
             }
@@ -586,6 +597,16 @@ pub fn font_definitions_language(prefer_hans: bool, prefer_korean: bool, system_
     }
     #[cfg(target_arch = "wasm32")]
     let _ = system_cjk;
+    // Keep document fallback families unchanged; only the three chrome aliases are themed.
+    for (family, alias) in [
+        (FontFamily::Proportional, "omaword-ui"),
+        (FontFamily::Name("medium".into()), "omaword-medium"),
+        (FontFamily::Name("semibold".into()), "omaword-semibold"),
+    ] {
+        if let Some(chain) = fonts.families.get(&family).cloned() {
+            fonts.families.insert(FontFamily::Name(alias.into()), chain);
+        }
+    }
     // Symbols and emoji fall back to egui's defaults (kept in the families).
     fonts
 }
@@ -623,13 +644,21 @@ fn system_cjk_font(hans: bool, korean: bool) -> Option<&'static wordcraft_fonts:
 }
 
 pub fn medium(size: f32) -> FontId {
-    FontId::new(size, FontFamily::Name("medium".into()))
+    FontId::new(size, FontFamily::Name("omaword-medium".into()))
 }
 pub fn semibold(size: f32) -> FontId {
-    FontId::new(size, FontFamily::Name("semibold".into()))
+    FontId::new(size, FontFamily::Name("omaword-semibold".into()))
 }
 pub fn regular(size: f32) -> FontId {
+    FontId::new(size, FontFamily::Name("omaword-ui".into()))
+}
+
+/// Original fallback roles for document comments and composition overlays.
+pub fn document_regular(size: f32) -> FontId {
     FontId::proportional(size)
+}
+pub fn document_semibold(size: f32) -> FontId {
+    FontId::new(size, FontFamily::Name("semibold".into()))
 }
 
 /// A UI type rung: size, weight pairing, and size-specific letter-spacing (large text is
@@ -747,8 +776,8 @@ fn tracked_job(text: &str, font: &FontId, tracking: f32, color: Color32) -> egui
 /// Setting a concrete theme for `System` would pin the native window too, and macOS then stops
 /// reporting appearance changes (#311).
 pub fn apply(ctx: &egui::Context, appearance: Appearance) {
-    ctx.set_visuals_of(egui::Theme::Light, visuals(&Tokens::light()));
-    ctx.set_visuals_of(egui::Theme::Dark, visuals(&Tokens::dark()));
+    ctx.set_visuals_of(egui::Theme::Light, visuals(&omarchy::resolved(ctx, false)));
+    ctx.set_visuals_of(egui::Theme::Dark, visuals(&omarchy::resolved(ctx, true)));
     ctx.all_styles_mut(|s| {
         s.spacing.item_spacing = egui::vec2(6.0, 4.0);
         s.spacing.button_padding = egui::vec2(8.0, 3.0);

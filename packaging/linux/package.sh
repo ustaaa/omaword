@@ -14,6 +14,8 @@
 # glibc 2.35) so the binaries run on newer ones. Optional: desktop-file-validate, appstreamcli,
 # zsyncmake (the zsync package) for the AppImage's .zsync.
 set -euo pipefail
+echo "error: this upstream WordCraft packager is disabled in OmaWord; use packaging/linux/package-omaword.sh" >&2
+exit 2
 # shellcheck source=../env.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../env.sh"
 HERE="$ROOT/packaging/linux"

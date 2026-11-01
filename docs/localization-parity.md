@@ -198,7 +198,7 @@ Where the region comes from:
   set by someone living in Germany gives A4 and a decimal comma here; reading the regional format
   needs Win32 calls that are `unsafe` in Rust, which WordCraft forbids.
 
-Runs without preferences (`WORDCRAFT_NO_PREFS`) stay `en-US` unless `WORDCRAFT_REGION` is set, so
+Runs without preferences (`OMAWORD_NO_PREFS`) stay `en-US` unless `WORDCRAFT_REGION` is set, so
 agents and screenshots give the same result on every machine. The decimal separator belongs to
 the language's own number format (CLDR): a decimal-comma language uses a comma everywhere except
 where CLDR says otherwise (`de-CH`), and English, whose `en-XX` locales follow the territory, uses a

@@ -465,6 +465,11 @@ mod placeholder_tests {
     #[test]
     fn a_missing_math_glyph_has_a_readable_linear_placeholder() {
         let ctx = egui::Context::default();
+        // Keep exactly the default test faces; alias the chrome role used by the real UI.
+        let mut fonts = egui::FontDefinitions::default();
+        let chain = fonts.families[&egui::FontFamily::Proportional].clone();
+        fonts.families.insert(egui::FontFamily::Name("omaword-ui".into()), chain);
+        ctx.set_fonts(fonts);
         let mut output = ctx.run_ui(egui::RawInput::default(), |ui| {
             assert!(!ui.fonts_mut(|fonts| fonts.has_glyph(&super::regular(11.0), '∁')));
             assert_eq!(super::math_placeholder(ui, "x+\u{2201}"), "x+\\complement");

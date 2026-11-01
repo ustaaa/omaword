@@ -1,8 +1,8 @@
-//! WordCraft desktop app.
+//! OmaWord desktop app.
 //!
 //! Usage: `wordcraft [--control <port>] [--sample] [files…]`; `--help` prints `USAGE`.
 //!
-//! `--control <port>` (or `WORDCRAFT_CONTROL_PORT`) starts a localhost JSON-lines control server:
+//! `--control <port>` (or `OMAWORD_CONTROL_PORT`) starts a localhost JSON-lines control server:
 //! `{"id":1,"key":"…","method":"engine.execute","params":{"command":"text.insert","params":{"text":"Hi"}}}`.
 //! Every request needs the key the app writes to `<settings>/control-key.<instance>` (mode 0600,
 //! removed on exit). See `docs/control-protocol.md`.
@@ -186,9 +186,15 @@ fn load_user_dictionary(app: &mut WordApp) {
     }
 }
 
-/// Runs without preferences (`WORDCRAFT_NO_PREFS`, agents' test runs) neither read nor write them.
+/// Runs without preferences (`OMAWORD_NO_PREFS`, agents' test runs) neither read nor write them.
 fn prefs_enabled() -> bool {
-    std::env::var_os("WORDCRAFT_NO_PREFS").is_none()
+    prefs_enabled_from(|name| std::env::var_os(name))
+}
+
+/// Only OmaWord's own name is read. The upstream WordCraft switch, exported for WordCraft
+/// runs, must not turn off OmaWord's preferences and recovery.
+fn prefs_enabled_from(var: impl Fn(&str) -> Option<std::ffi::OsString>) -> bool {
+    var("OMAWORD_NO_PREFS").is_none()
 }
 
 fn load_prefs(app: &mut WordApp) {
@@ -285,22 +291,22 @@ fn services(file_dialog: file_dialogs::Hook, ctx: &egui::Context) -> Services {
 /// Window, Dock and taskbar icon.
 fn app_icon() -> Option<egui::IconData> {
     #[cfg(target_os = "macos")]
-    let png: &[u8] = include_bytes!("../../../assets/app-icon/wordcraft-macos-512.png");
+    let png: &[u8] = include_bytes!("../../../assets/omaword-icon/512/io.github.ustaaa.OmaWord.png");
     #[cfg(not(target_os = "macos"))]
-    let png: &[u8] = include_bytes!("../../../assets/app-icon/hicolor/256x256/apps/ai.storyteller.wordcraft.png");
+    let png: &[u8] = include_bytes!("../../../assets/omaword-icon/256/io.github.ustaaa.OmaWord.png");
     eframe::icon_data::from_png_bytes(png).map_err(|e| log::warn!("app icon: {e}")).ok()
 }
 
 const USAGE: &str = "\
-wordcraft — the WordCraft desktop app
+omaword — the OmaWord desktop app
 
 USAGE:
-  wordcraft [--sample] [--control PORT] [FILE…]
+  omaword [--sample] [--control PORT] [FILE…]
 
 OPTIONS:
   --sample            open the sample document
   --control PORT      start the localhost control server on PORT, for agents and scripts
-                      (or set WORDCRAFT_CONTROL_PORT); see docs/control-protocol.md
+                      (or set OMAWORD_CONTROL_PORT); see docs/control-protocol.md
   --version           print the version
   -h, --help          print this help
 ";
@@ -347,16 +353,16 @@ fn open_non_unicode(app: &mut WordApp, path: &std::path::Path) {
 /// Parses the command line, installs logging and the panic hook, restores preferences and window
 /// geometry, opens requested documents or the Start screen, starts the control server when
 /// asked, and runs the eframe event loop.
+#[cfg(any(test, all(unix, not(target_os = "macos"))))]
+fn x11_override(value: Option<&std::ffi::OsStr>) -> bool {
+    value == Some(std::ffi::OsStr::new("1"))
+}
+
 fn main() -> eframe::Result {
-    // Windows: the update helper is a copy of this program started with `--finish-update`.
-    #[cfg(windows)]
-    if let Some(result) = craft_update::self_update::finish(&craft_update::suite::WORDCRAFT, &std::env::args_os().skip(1).collect::<Vec<_>>()) {
-        std::process::exit(i32::from(result.is_err()));
-    }
     // First, so the panic hook and every start-up warning are recorded (`logging`).
     let logger = logging::install();
     logging::install_panic_hook();
-    let mut control_port: Option<u16> = std::env::var("WORDCRAFT_CONTROL_PORT").ok().and_then(|p| p.parse().ok());
+    let mut control_port: Option<u16> = std::env::var("OMAWORD_CONTROL_PORT").ok().and_then(|p| p.parse().ok());
     let mut files = Vec::new();
     let mut sample = false;
     let (args, other_files) = text_args();
@@ -374,7 +380,12 @@ fn main() -> eframe::Result {
             }
             "--sample" => sample = true,
             "--version" => {
-                println!("wordcraft {} ({})", env!("CARGO_PKG_VERSION"), build_sha());
+                println!(
+                    "OmaWord {} (upstream WordCraft {}; {})",
+                    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../OMA_VERSION")).trim_ascii(),
+                    env!("CARGO_PKG_VERSION"),
+                    build_sha()
+                );
                 return Ok(());
             }
             // Before the window opens (#968). Unlike `print!`, a closed stdout can't panic.
@@ -398,7 +409,13 @@ fn main() -> eframe::Result {
     if let Some(logger) = logger {
         match log_dir().filter(|_| prefs_enabled()) {
             Some(dir) => match logger.attach_dir(&dir) {
-                Ok(path) => log::info!("WordCraft {} ({}), log file {}", env!("CARGO_PKG_VERSION"), build_sha(), path.display()),
+                Ok(path) => log::info!(
+                    "OmaWord {} (upstream WordCraft {}; {}), log file {}",
+                    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/../../OMA_VERSION")).trim_ascii(),
+                    env!("CARGO_PKG_VERSION"),
+                    build_sha(),
+                    path.display()
+                ),
                 // Standard error only by now (`attach_dir` gave up on the file); unlike `eprintln!`, never panics.
                 Err(e) => log::warn!("no log file: {e}"),
             },
@@ -407,8 +424,8 @@ fn main() -> eframe::Result {
     }
     let mut options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_title("WordCraft")
-            .with_app_id("ai.storyteller.wordcraft")
+            .with_title("OmaWord")
+            .with_app_id("io.github.ustaaa.OmaWord")
             .with_inner_size([1440.0, 920.0])
             .with_min_inner_size([760.0, 480.0])
             .with_drag_and_drop(true)
@@ -436,10 +453,11 @@ fn main() -> eframe::Result {
         options.viewport = window.apply(options.viewport);
     }
     #[cfg(all(unix, not(target_os = "macos")))]
-    // winit has no file drag-and-drop on Wayland (only on X11), so dropping files from the file
-    // manager showed a "no" cursor. Run through XWayland when it's there; WORDCRAFT_WAYLAND=1
-    // keeps the native Wayland backend.
-    if std::env::var_os("DISPLAY").is_some() && std::env::var_os("WORDCRAFT_WAYLAND").is_none() {
+    // Linux pilot policy: launchers opt into native Wayland for direct compositor scaling.
+    // OMAWORD_X11=1 forces X11; WORDCRAFT_WAYLAND remains accepted for existing scripts.
+    if x11_override(std::env::var_os("OMAWORD_X11").as_deref())
+        || (std::env::var_os("DISPLAY").is_some() && std::env::var_os("OMAWORD_WAYLAND").is_none() && std::env::var_os("WORDCRAFT_WAYLAND").is_none())
+    {
         options.event_loop_builder = Some(Box::new(|b| {
             use winit::platform::x11::EventLoopBuilderExtX11;
             b.with_x11();
@@ -452,7 +470,7 @@ fn main() -> eframe::Result {
     #[cfg(target_os = "macos")]
     let apple_events = &apple_events;
     eframe::run_native(
-        "WordCraft",
+        "OmaWord",
         options,
         Box::new(move |cc| {
             // The system region picks the new document's paper, the units and the decimal
@@ -463,7 +481,7 @@ fn main() -> eframe::Result {
             let mut session = Session::new(doc);
             session.system_region = region;
             let mut app = WordApp::new(session, services(file_dialog, &cc.egui_ctx));
-            app.set_startup_update_check(true);
+
             load_prefs(&mut app);
             load_user_dictionary(&mut app);
             // A region chosen in File › Options replaces the system's for the first blank
@@ -528,6 +546,20 @@ fn main() -> eframe::Result {
 #[cfg(all(test, unix, not(target_os = "macos")))]
 mod tests {
     use super::*;
+
+    #[test]
+    fn only_omaword_names_switch_off_preferences() {
+        assert!(prefs_enabled_from(|name| (name == "WORDCRAFT_NO_PREFS").then(|| "1".into())));
+        assert!(!prefs_enabled_from(|name| (name == "OMAWORD_NO_PREFS").then(|| "1".into())));
+    }
+
+    #[test]
+    fn only_one_enables_x11_override() {
+        assert!(x11_override(Some(std::ffi::OsStr::new("1"))));
+        assert!(!x11_override(Some(std::ffi::OsStr::new("0"))));
+        assert!(!x11_override(Some(std::ffi::OsStr::new(""))));
+        assert!(!x11_override(None));
+    }
     use std::os::unix::ffi::OsStringExt;
 
     #[test]

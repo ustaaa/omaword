@@ -6,14 +6,14 @@ use std::process::{Command, Output, Stdio};
 use std::time::{Duration, Instant};
 
 fn app(args: &[OsString]) -> Output {
-    let mut child = Command::new(env!("CARGO_BIN_EXE_wordcraft"))
+    let mut child = Command::new(env!("CARGO_BIN_EXE_omaword"))
         .args(args)
         // With no display, an app that tries to open a window fails at once instead.
         .env_remove("DISPLAY")
         .env_remove("WAYLAND_DISPLAY")
         .env_remove("WAYLAND_SOCKET")
-        .env_remove("WORDCRAFT_CONTROL_PORT")
-        .env("WORDCRAFT_NO_PREFS", "1")
+        .env_remove("OMAWORD_CONTROL_PORT")
+        .env("OMAWORD_NO_PREFS", "1")
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())

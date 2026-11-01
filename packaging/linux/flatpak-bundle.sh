@@ -13,6 +13,8 @@
 # `wordcraft-cli --version` is run inside the sandbox as a smoke test.
 # Manifest: packaging/linux/flatpak/ai.storyteller.wordcraft.bundle.yml.
 set -euo pipefail
+echo "error: this upstream WordCraft Flatpak packager is disabled in OmaWord; no OmaWord Flatpak bundle is configured" >&2
+exit 2
 # shellcheck source=../env.sh
 . "$(dirname "${BASH_SOURCE[0]}")/../env.sh"
 HERE="$ROOT/packaging/linux"
