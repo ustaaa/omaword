@@ -58,3 +58,11 @@ the three app integration tests still set the upstream names and so no longer te
 anything, and now use the OmaWord names. Behaviour switches (`WORDCRAFT_REGION`,
 `_LANGUAGE`, `_DICTIONARIES`, `_SPEECH`, `_FILE_DIALOG`, `_PASSWORD`, `_CARET_GLIDE_MS`)
 and `WORDCRAFT_WAYLAND` keep their upstream names. The fonts crate change is a comment.
+
+### Alpha version reporting (2026-11-01)
+Downstream label `0.12.0-oma.1.alpha.1` is shown by GUI About and
+`omaword --version` / `omaword-cli --version`; output names upstream WordCraft 0.12.0
+separately. The Linux pilot package uses the downstream label and includes `VERSION.txt`
+with both versions. Cargo package versions and lockfile are unchanged. Rust builds/runtime
+and package artifact verification are delegated to Halo; local formatting, shell syntax
+and diff whitespace checks passed.

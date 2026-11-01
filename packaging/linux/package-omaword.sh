@@ -3,6 +3,9 @@
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 . "$ROOT/packaging/env.sh"
+UPSTREAM_VERSION="$VERSION"
+VERSION="$(tr -d '\r\n' < "$ROOT/oma-version.txt")"
+[[ -n "$VERSION" ]] || { echo "error: empty OmaWord version label" >&2; exit 1; }
 TARGET=${CARGO_TARGET_DIR:-$ROOT/target}
 FONT_DIR=${CRAFT_FONTS_DIR:?Set CRAFT_FONTS_DIR to the pinned font checkout used for the build}
 I18N_DIR=${CRAFT_I18N_DIR:?Set CRAFT_I18N_DIR to the pinned translation checkout}
@@ -22,6 +25,7 @@ done
 install -Dm644 "$ROOT/assets/omaword-icon/io.github.ustaaa.OmaWord.svg" "$TREE/share/icons/hicolor/scalable/apps/io.github.ustaaa.OmaWord.svg"
 DOC="$TREE/share/doc/omaword"
 mkdir -p "$DOC/fonts-bundled" "$DOC/craft-fonts"
+printf 'OmaWord %s\nUpstream WordCraft %s\n' "$VERSION" "$UPSTREAM_VERSION" >"$DOC/VERSION.txt"
 for file in LICENSE-MIT LICENSE-APACHE ATTRIBUTION.md; do install -m644 "$ROOT/$file" "$DOC/$file"; done
 cp -R "$ROOT/assets/fonts/." "$DOC/fonts-bundled/"
 # Include the exact pack's licensing tree and manifest; font bytes are already embedded.

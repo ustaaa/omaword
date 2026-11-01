@@ -380,7 +380,12 @@ fn main() -> eframe::Result {
             }
             "--sample" => sample = true,
             "--version" => {
-                println!("OmaWord {} ({})", env!("CARGO_PKG_VERSION"), build_sha());
+                println!(
+                    "OmaWord {} (upstream WordCraft {}; {})",
+                    include_str!("../../../oma-version.txt").trim(),
+                    env!("CARGO_PKG_VERSION"),
+                    build_sha()
+                );
                 return Ok(());
             }
             // Before the window opens (#968). Unlike `print!`, a closed stdout can't panic.
@@ -404,7 +409,13 @@ fn main() -> eframe::Result {
     if let Some(logger) = logger {
         match log_dir().filter(|_| prefs_enabled()) {
             Some(dir) => match logger.attach_dir(&dir) {
-                Ok(path) => log::info!("OmaWord {} ({}), log file {}", env!("CARGO_PKG_VERSION"), build_sha(), path.display()),
+                Ok(path) => log::info!(
+                    "OmaWord {} (upstream WordCraft {}; {}), log file {}",
+                    include_str!("../../../oma-version.txt").trim(),
+                    env!("CARGO_PKG_VERSION"),
+                    build_sha(),
+                    path.display()
+                ),
                 // Standard error only by now (`attach_dir` gave up on the file); unlike `eprintln!`, never panics.
                 Err(e) => log::warn!("no log file: {e}"),
             },
