@@ -3,7 +3,7 @@
 set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
 . "$ROOT/packaging/env.sh"
-UPSTREAM_VERSION="$VERSION"
+UPSTREAM_VERSION="$(workspace_version)"
 VERSION="$(tr -d '\r\n' < "$ROOT/oma-version.txt")"
 [[ -n "$VERSION" ]] || { echo "error: empty OmaWord version label" >&2; exit 1; }
 TARGET=${CARGO_TARGET_DIR:-$ROOT/target}
